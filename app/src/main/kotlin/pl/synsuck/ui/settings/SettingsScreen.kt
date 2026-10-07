@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import pl.synsuck.BuildConfig
 import pl.synsuck.R
 import pl.synsuck.data.Settings
 import pl.synsuck.data.SyncInterval
@@ -151,6 +152,20 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenAccou
 
             SectionTitle(R.string.language_title)
             LanguagePicker()
+            HorizontalDivider(Modifier.padding(top = 8.dp))
+
+            SectionTitle(R.string.about_title)
+            Text(
+                stringResource(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.GIT_SHA),
+                Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                stringResource(R.string.about_build, BuildConfig.VERSION_CODE, BuildConfig.BUILD_TYPE),
+                Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

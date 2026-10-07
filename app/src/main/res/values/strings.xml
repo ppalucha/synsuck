@@ -98,4 +98,8 @@
         <item quantity="one">%1$s: %2$d new message</item>
         <item quantity="other">%1$s: %2$d new messages</item>
     </plurals>
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_version">Synsuck %1$s (%2$s)</string>
+    <string name="about_build">Build %1$d · %2$s</string>
 </resources>
