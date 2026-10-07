@@ -25,5 +25,6 @@ done
 exec docker run --rm ${tty_flags[@]+"${tty_flags[@]}"} ${env_flags[@]+"${env_flags[@]}"} --platform linux/amd64 \
   -v "$ROOT:/work" \
   -v synsuck-gradle:/root/.gradle \
+  -v synsuck-adb:/root/.android \
   -w /work \
   "$IMAGE" "${@:-bash}"
