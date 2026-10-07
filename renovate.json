@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests",
+    ":semanticCommits"
+  ],
+  "timezone": "Europe/Warsaw",
+  "schedule": ["before 9am on monday"],
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "description": "Kotlin compiler plugins and KSP move together",
+      "groupName": "Kotlin",
+      "matchPackageNames": ["org.jetbrains.kotlin.*", "org.jetbrains.kotlin:*", "com.google.devtools.ksp", "com.google.devtools.ksp:*"]
+    },
+    {
+      "description": "AndroidX libraries and Compose",
+      "groupName": "AndroidX",
+      "matchPackageNames": ["androidx.**"]
+    },
+    {
+      "description": "Android Gradle Plugin on its own: may need a newer compileSdk / Docker image",
+      "groupName": "Android Gradle Plugin",
+      "matchPackageNames": ["com.android.application", "com.android.tools.build:*"]
+    },
+    {
+      "groupName": "OkHttp",
+      "matchPackageNames": ["com.squareup.okhttp3:*"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": ["github-actions"]
+    }
+  ]
+}
