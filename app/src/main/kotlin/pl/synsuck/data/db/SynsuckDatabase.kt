@@ -1,6 +1,7 @@
 package pl.synsuck.data.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -10,8 +11,9 @@ import java.time.Instant
 
 @Database(
     entities = [AccountEntity::class, MessageEntity::class, AttachmentEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 @TypeConverters(Converters::class)
 abstract class SynsuckDatabase : RoomDatabase() {

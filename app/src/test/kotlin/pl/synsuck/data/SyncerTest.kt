@@ -6,9 +6,11 @@ import kotlinx.coroutines.test.runTest
 import pl.synsuck.data.db.AccountDao
 import pl.synsuck.data.db.AccountEntity
 import pl.synsuck.data.db.AccountStatus
+import pl.synsuck.data.db.AttachmentEntity
 import pl.synsuck.data.db.MessageDao
 import pl.synsuck.data.db.MessageEntity
 import pl.synsuck.data.db.MessageRow
+import pl.synsuck.data.db.PreviewRow
 import pl.synsuck.data.db.UnreadCount
 import pl.synsuck.librus.Folder
 import pl.synsuck.librus.LibrusException
@@ -144,6 +146,7 @@ class SyncerTest {
         override fun observeAll(): Flow<List<AccountEntity>> = emptyFlow()
         override suspend fun getAll() = rows.values.toList()
         override suspend fun get(id: Long) = rows[id]
+        override fun observe(id: Long): Flow<AccountEntity?> = emptyFlow()
         override suspend fun loginExists(login: String) = rows.values.any { it.login == login }
         override suspend fun nextSortOrder() = rows.size
         override suspend fun insert(account: AccountEntity): Long = account.id.also { rows[it] = account }
@@ -162,6 +165,19 @@ class SyncerTest {
         val rows = linkedMapOf<Pair<Long, String>, MessageEntity>()
         override fun observeRows(): Flow<List<MessageRow>> = emptyFlow()
         override fun observeUnreadCounts(): Flow<List<UnreadCount>> = emptyFlow()
+        override fun observe(accountId: Long, messageId: String): Flow<MessageEntity?> = emptyFlow()
+        override suspend fun get(accountId: Long, messageId: String) = rows[accountId to messageId]
+        override fun observeAttachments(accountId: Long, messageId: String): Flow<List<AttachmentEntity>> = emptyFlow()
+        override suspend fun getAttachments(accountId: Long, messageId: String) = emptyList<AttachmentEntity>()
+        override suspend fun updateDetail(
+            accountId: Long, messageId: String, body: String, attachmentInfo: String?, senderGroup: String?, readAt: Instant,
+        ) = Unit
+        override suspend fun deleteAttachments(accountId: Long, messageId: String) = Unit
+        override suspend fun allPreviews() = rows.values.map { PreviewRow(it.accountId, it.messageId, it.preview) }
+        override suspend fun updatePreview(accountId: Long, messageId: String, preview: String) {
+            rows[accountId to messageId] = rows.getValue(accountId to messageId).copy(preview = preview)
+        }
+        override suspend fun insertAttachments(attachments: List<AttachmentEntity>) = Unit
         override suspend fun knownIds(accountId: Long, folder: Folder) =
             rows.values.filter { it.accountId == accountId && it.folder == folder }.map { it.messageId }
         override suspend fun insertIgnore(messages: List<MessageEntity>): List<Long> = messages.map { m ->

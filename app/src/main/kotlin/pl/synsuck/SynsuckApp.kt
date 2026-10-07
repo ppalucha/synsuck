@@ -4,10 +4,13 @@ import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import pl.synsuck.crypto.PasswordCipher
 import pl.synsuck.data.AccountRepository
 import pl.synsuck.data.LibrusSessions
+import pl.synsuck.data.MessageRepository
+import pl.synsuck.data.Settings
 import pl.synsuck.data.Syncer
 import pl.synsuck.data.db.SynsuckDatabase
 import java.util.concurrent.TimeUnit
@@ -27,6 +30,8 @@ class AppContainer(app: Application) {
     val sessions = LibrusSessions(http, cipher)
     val accounts = AccountRepository(database.accounts(), cipher, sessions)
     val syncer = Syncer(database.accounts(), database.messages(), sessions)
+    val messages = MessageRepository(database.accounts(), database.messages(), sessions, app.cacheDir)
+    val settings = Settings(app)
 }
 
 class SynsuckApp : Application() {
@@ -36,5 +41,9 @@ class SynsuckApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        container.appScope.launch {
+            container.settings.runOnce("decode_previews") { container.messages.decodeStoredPreviews() }
+            container.messages.cleanupCache()
+        }
     }
 }

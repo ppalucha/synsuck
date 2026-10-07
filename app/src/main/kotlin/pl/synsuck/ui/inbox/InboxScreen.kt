@@ -23,8 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,9 +68,10 @@ import pl.synsuck.ui.theme.AccountColors
 @Composable
 fun InboxScreen(
     viewModel: InboxViewModel,
-    onOpenAccounts: () -> Unit,
+    onOpenSettings: () -> Unit,
     onAddAccount: () -> Unit,
     onFixAccount: (Long) -> Unit,
+    onOpenMessage: (accountId: Long, messageId: String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
@@ -93,8 +94,8 @@ fun InboxScreen(
                     IconButton(onClick = viewModel::refresh, enabled = !refreshing) {
                         Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.action_refresh))
                     }
-                    IconButton(onClick = onOpenAccounts) {
-                        Icon(Icons.Default.ManageAccounts, contentDescription = stringResource(R.string.action_accounts))
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_title))
                     }
                 },
             )
@@ -105,7 +106,7 @@ fun InboxScreen(
             when {
                 !state.loaded -> Unit
                 state.tabs.isEmpty() -> NoAccounts(onAddAccount)
-                else -> Inbox(state, refreshing, viewModel::refresh, onFixAccount)
+                else -> Inbox(state, refreshing, viewModel::refresh, onFixAccount, onOpenMessage)
             }
         }
     }
@@ -117,6 +118,7 @@ private fun Inbox(
     refreshing: Boolean,
     onRefresh: () -> Unit,
     onFixAccount: (Long) -> Unit,
+    onOpenMessage: (Long, String) -> Unit,
 ) {
     // Tab 0 = All; tab i = account i-1. Hidden with a single account.
     var selected by rememberSaveable { mutableIntStateOf(0) }
@@ -157,7 +159,12 @@ private fun Inbox(
                 }
             }
             items(rows, key = { "${it.accountId}/${it.messageId}" }) { row ->
-                MessageListItem(row, showAccount = multiple && selectedAccount == null, formatDate = formatDate)
+                MessageListItem(
+                    row,
+                    showAccount = multiple && selectedAccount == null,
+                    formatDate = formatDate,
+                    onClick = { onOpenMessage(row.accountId, row.messageId) },
+                )
                 HorizontalDivider()
             }
         }
@@ -195,12 +202,17 @@ private fun StatusBanner(account: AccountEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun MessageListItem(row: MessageRow, showAccount: Boolean, formatDate: (java.time.Instant) -> String) {
+private fun MessageListItem(
+    row: MessageRow,
+    showAccount: Boolean,
+    formatDate: (java.time.Instant) -> String,
+    onClick: () -> Unit,
+) {
     val unread = row.readAt == null
     val accountColor = AccountColors.of(row.accountColor)
     val weight = if (unread) FontWeight.Bold else FontWeight.Normal
 
-    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable(onClick = onClick)) {
         Box(Modifier.width(4.dp).fillMaxHeight().background(accountColor))
         Column(Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

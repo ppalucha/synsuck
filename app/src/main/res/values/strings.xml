@@ -7,7 +7,6 @@
     <string name="tab_all">All</string>
     <string name="tab_with_unread">%1$s (%2$d)</string>
     <string name="action_refresh">Refresh</string>
-    <string name="action_accounts">Accounts</string>
     <string name="inbox_empty">No messages yet. Pull down to refresh.</string>
     <string name="no_accounts">Add your first Librus account to start reading messages.</string>
     <string name="yesterday">Yesterday</string>
@@ -53,4 +52,32 @@
     <string name="error_unexpected">Unexpected response from Librus: %1$s</string>
     <string name="error_duplicate">This login is already added.</string>
     <string name="error_required">Login and password are required.</string>
+
+    <!-- Message -->
+    <string name="loading_message">Loading message…</string>
+    <string name="retry">Retry</string>
+    <string name="librus_error">Librus returned something unexpected. Try again later.</string>
+    <string name="attachments">Attachments</string>
+    <string name="open_attachment">Open</string>
+    <string name="no_app_to_open">No app on this phone can open this file.</string>
+    <string name="forward_as_email">Forward as email</string>
+    <string name="preparing_forward">Downloading attachments…</string>
+    <string name="no_mail_app">No email app found.</string>
+    <string name="forward_subject">Fwd: %1$s</string>
+    <string name="forward_header_title">---------- Forwarded message from Librus ----------</string>
+    <string name="forward_header_from">From: %1$s</string>
+    <string name="forward_header_date">Date: %1$s</string>
+    <string name="forward_header_subject">Subject: %1$s</string>
+    <string name="forward_header_account">Account: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="forward_to_title">Forwarding</string>
+    <string name="forward_to_label">Default recipient</string>
+    <string name="forward_to_hint">Pre-filled when forwarding a message as email</string>
+    <string name="forward_to_invalid">This doesn\'t look like an email address</string>
+    <string name="language_title">Language</string>
+    <string name="language_system">System default</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_polish" translatable="false">Polski</string>
 </resources>

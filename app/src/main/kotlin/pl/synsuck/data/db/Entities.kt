@@ -56,6 +56,8 @@ data class MessageEntity(
     val sentAt: Instant,
     val readAt: Instant?,
     val hasAttachments: Boolean,
+    /** e.g. "Nauczyciel"; known only after the message was opened. */
+    val senderGroup: String? = null,
     /** Decoded message text; null until the user opens the message (opening marks it read). */
     val body: String? = null,
     val attachmentInfo: String? = null,
@@ -98,3 +100,5 @@ data class MessageRow(
 )
 
 data class UnreadCount(val accountId: Long, val unread: Int)
+
+data class PreviewRow(val accountId: Long, val messageId: String, val preview: String)

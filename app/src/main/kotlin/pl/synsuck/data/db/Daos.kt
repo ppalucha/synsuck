@@ -21,6 +21,9 @@ interface AccountDao {
     @Query("SELECT * FROM accounts WHERE id = :id")
     suspend fun get(id: Long): AccountEntity?
 
+    @Query("SELECT * FROM accounts WHERE id = :id")
+    fun observe(id: Long): Flow<AccountEntity?>
+
     @Query("SELECT EXISTS(SELECT 1 FROM accounts WHERE login = :login)")
     suspend fun loginExists(login: String): Boolean
 
@@ -61,6 +64,71 @@ interface MessageDao {
 
     @Query("SELECT accountId, COUNT(*) AS unread FROM messages WHERE readAt IS NULL GROUP BY accountId")
     fun observeUnreadCounts(): Flow<List<UnreadCount>>
+
+    @Query("SELECT * FROM messages WHERE accountId = :accountId AND messageId = :messageId")
+    fun observe(accountId: Long, messageId: String): Flow<MessageEntity?>
+
+    @Query("SELECT * FROM messages WHERE accountId = :accountId AND messageId = :messageId")
+    suspend fun get(accountId: Long, messageId: String): MessageEntity?
+
+    @Query("SELECT * FROM attachments WHERE accountId = :accountId AND messageId = :messageId ORDER BY filename")
+    fun observeAttachments(accountId: Long, messageId: String): Flow<List<AttachmentEntity>>
+
+    @Query("SELECT * FROM attachments WHERE accountId = :accountId AND messageId = :messageId ORDER BY filename")
+    suspend fun getAttachments(accountId: Long, messageId: String): List<AttachmentEntity>
+
+    @Query(
+        """
+        UPDATE messages SET body = :body, attachmentInfo = :attachmentInfo, senderGroup = :senderGroup,
+               readAt = COALESCE(readAt, :readAt)
+        WHERE accountId = :accountId AND messageId = :messageId
+        """,
+    )
+    suspend fun updateDetail(
+        accountId: Long,
+        messageId: String,
+        body: String,
+        attachmentInfo: String?,
+        senderGroup: String?,
+        readAt: Instant,
+    )
+
+    @Query("DELETE FROM attachments WHERE accountId = :accountId AND messageId = :messageId")
+    suspend fun deleteAttachments(accountId: Long, messageId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAttachments(attachments: List<AttachmentEntity>)
+
+    /** Stores an opened message's body and attachment list. */
+    @Transaction
+    suspend fun saveDetail(
+        accountId: Long,
+        messageId: String,
+        body: String,
+        attachmentInfo: String?,
+        senderGroup: String?,
+        readAt: Instant,
+        attachments: List<AttachmentEntity>,
+    ) {
+        updateDetail(accountId, messageId, body, attachmentInfo, senderGroup, readAt)
+        deleteAttachments(accountId, messageId)
+        insertAttachments(attachments)
+    }
+
+    @Query("SELECT accountId, messageId, preview FROM messages")
+    suspend fun allPreviews(): List<PreviewRow>
+
+    @Query("UPDATE messages SET preview = :preview WHERE accountId = :accountId AND messageId = :messageId")
+    suspend fun updatePreview(accountId: Long, messageId: String, preview: String)
+
+    /** Rewrites stored previews with [transform]; used for one-off data fixes. */
+    @Transaction
+    suspend fun rewritePreviews(transform: (String) -> String) {
+        for (row in allPreviews()) {
+            val fixed = transform(row.preview)
+            if (fixed != row.preview) updatePreview(row.accountId, row.messageId, fixed)
+        }
+    }
 
     @Query("SELECT messageId FROM messages WHERE accountId = :accountId AND folder = :folder")
     suspend fun knownIds(accountId: Long, folder: Folder): List<String>

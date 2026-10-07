@@ -5,7 +5,6 @@
     <string name="tab_all">Wszystkie</string>
     <string name="tab_with_unread">%1$s (%2$d)</string>
     <string name="action_refresh">Odśwież</string>
-    <string name="action_accounts">Konta</string>
     <string name="inbox_empty">Brak wiadomości. Przeciągnij w dół, aby odświeżyć.</string>
     <string name="no_accounts">Dodaj pierwsze konto Librus, aby czytać wiadomości.</string>
     <string name="yesterday">Wczoraj</string>
@@ -51,4 +50,30 @@
     <string name="error_unexpected">Nieoczekiwana odpowiedź Librusa: %1$s</string>
     <string name="error_duplicate">Ten login jest już dodany.</string>
     <string name="error_required">Login i hasło są wymagane.</string>
+
+    <!-- Message -->
+    <string name="loading_message">Wczytywanie wiadomości…</string>
+    <string name="retry">Ponów</string>
+    <string name="librus_error">Librus zwrócił nieoczekiwaną odpowiedź. Spróbuj później.</string>
+    <string name="attachments">Załączniki</string>
+    <string name="open_attachment">Otwórz</string>
+    <string name="no_app_to_open">Brak aplikacji, która może otworzyć ten plik.</string>
+    <string name="forward_as_email">Przekaż e-mailem</string>
+    <string name="preparing_forward">Pobieranie załączników…</string>
+    <string name="no_mail_app">Nie znaleziono aplikacji pocztowej.</string>
+    <string name="forward_subject">Fwd: %1$s</string>
+    <string name="forward_header_title">---------- Przekazana wiadomość z Librusa ----------</string>
+    <string name="forward_header_from">Od: %1$s</string>
+    <string name="forward_header_date">Data: %1$s</string>
+    <string name="forward_header_subject">Temat: %1$s</string>
+    <string name="forward_header_account">Konto: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ustawienia</string>
+    <string name="forward_to_title">Przekazywanie</string>
+    <string name="forward_to_label">Domyślny odbiorca</string>
+    <string name="forward_to_hint">Wstawiany przy przekazywaniu wiadomości e-mailem</string>
+    <string name="forward_to_invalid">To nie wygląda na adres e-mail</string>
+    <string name="language_title">Język</string>
+    <string name="language_system">Domyślny systemu</string>
 </resources>
