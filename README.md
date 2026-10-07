@@ -39,6 +39,30 @@ the `synsuck-adb` volume):
 3. Install (the port shown on the Wireless debugging screen, not the pairing one):
    `./dev sh -c 'adb connect <ip>:<port> && adb install -r app/build/outputs/apk/debug/app-debug.apk'`
 
+## Versions and releases
+
+The version comes from git: tag `v1.2.3` → `1.2.3`, later commits → `1.2.3-4-gabc1234`,
+and `versionCode` is the commit count. Shown in Settings → About.
+
+**CI** (`.github/workflows/ci.yml`) runs the tests and builds a debug APK on every push and PR.
+
+**Release** (`.github/workflows/release.yml`): pushing a tag `v*` builds a signed release APK,
+attests its build provenance, and attaches it (plus a SHA-256 file) to a GitHub Release.
+
+One-time signing setup (keep the keystore and password backed up — updates must be signed with
+the same key):
+
+```sh
+keytool -genkeypair -keystore ~/synsuck-release.jks -storetype PKCS12 \
+  -alias synsuck -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Synsuck"
+gh secret set SIGNING_KEYSTORE_BASE64 < <(base64 -i ~/synsuck-release.jks)
+gh secret set SIGNING_KEYSTORE_PASSWORD   # prompts; the keystore password
+gh secret set SIGNING_KEY_ALIAS --body synsuck
+```
+
+Then: `git tag v0.3.0 && git push origin v0.3.0`. Debug and release builds are signed with
+different keys, so switching from a debug install to a release one needs an uninstall first.
+
 ## Probing a real account
 
 From a real terminal (needs a TTY for the hidden password prompt):
