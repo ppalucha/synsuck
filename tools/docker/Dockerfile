@@ -11,8 +11,9 @@ ENV ANDROID_HOME=/opt/android-sdk
 ENV PATH=${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends unzip curl ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y --no-install-recommends unzip curl ca-certificates git \
+ && rm -rf /var/lib/apt/lists/* \
+ && git config --system --add safe.directory /work  # repo is bind-mounted with a different owner
 
 RUN curl -fsSL -o /tmp/cmdline-tools.zip \
       "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_VERSION}_latest.zip" \
