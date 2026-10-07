@@ -80,4 +80,22 @@
     <string name="language_system">System default</string>
     <string name="language_english" translatable="false">English</string>
     <string name="language_polish" translatable="false">Polski</string>
+    <!-- Background check & notifications -->
+    <string name="background_title">Check for new messages</string>
+    <string name="interval_off">Off (manual refresh only)</string>
+    <string name="interval_15m">Every 15 minutes</string>
+    <string name="interval_30m">Every 30 minutes</string>
+    <string name="interval_1h">Every hour</string>
+    <string name="interval_3h">Every 3 hours</string>
+    <string name="notifications_label">Notifications</string>
+    <string name="notifications_hint">Notify about new unread messages</string>
+    <string name="notifications_blocked">Blocked in system settings – tap to change</string>
+    <string name="notifications_need_interval">Turn on background checks to get notifications</string>
+    <string name="channel_new_messages">New messages</string>
+    <string name="channel_account_problems">Account problems</string>
+    <string name="notification_public_text">New messages from Librus</string>
+    <plurals name="new_messages_title">
+        <item quantity="one">%1$s: %2$d new message</item>
+        <item quantity="other">%1$s: %2$d new messages</item>
+    </plurals>
 </resources>

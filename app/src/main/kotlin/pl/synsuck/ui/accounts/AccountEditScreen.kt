@@ -80,6 +80,7 @@ class AccountEditViewModel(
     private val repository: AccountRepository,
     private val syncer: Syncer,
     private val appScope: CoroutineScope,
+    private val onAccountFixed: (Long) -> Unit,
     private val accountId: Long?,
 ) : ViewModel() {
     private val _state = MutableStateFlow(AccountEditState(fixMode = accountId != null))
@@ -117,6 +118,7 @@ class AccountEditViewModel(
                 repository.updatePassword(accountId, password)
             }
             if (result is VerifyResult.Ok) {
+                onAccountFixed(result.accountId)
                 // Outlives this screen: first sync of a new/fixed account.
                 appScope.launch { repository.get(result.accountId)?.let { syncer.syncAccount(it) } }
                 _state.update { it.copy(busy = false, password = "", done = true) }

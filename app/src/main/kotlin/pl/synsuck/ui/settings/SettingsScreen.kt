@@ -2,6 +2,13 @@
 
 package pl.synsuck.ui.settings
 
+import android.Manifest
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS
+import android.provider.Settings.EXTRA_APP_PACKAGE
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -27,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -36,11 +44,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,15 +61,41 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import pl.synsuck.R
 import pl.synsuck.data.Settings
+import pl.synsuck.data.SyncInterval
+import pl.synsuck.sync.SyncScheduler
 
-class SettingsViewModel(private val settings: Settings) : ViewModel() {
+class SettingsViewModel(private val settings: Settings, private val scheduler: SyncScheduler) : ViewModel() {
     val forwardTo: StateFlow<String?> = settings.forwardTo
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val syncInterval: StateFlow<SyncInterval?> = settings.syncInterval
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val notifications: StateFlow<Boolean?> = settings.notificationsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun setForwardTo(value: String) {
         viewModelScope.launch { settings.setForwardTo(value) }
     }
+
+    fun setSyncInterval(interval: SyncInterval) {
+        viewModelScope.launch {
+            settings.setSyncInterval(interval)
+            scheduler.apply(interval)
+        }
+    }
+
+    fun setNotifications(enabled: Boolean) {
+        viewModelScope.launch { settings.setNotificationsEnabled(enabled) }
+    }
 }
+
+private val SyncInterval.label: Int
+    get() = when (this) {
+        SyncInterval.OFF -> R.string.interval_off
+        SyncInterval.MIN_15 -> R.string.interval_15m
+        SyncInterval.MIN_30 -> R.string.interval_30m
+        SyncInterval.HOUR_1 -> R.string.interval_1h
+        SyncInterval.HOUR_3 -> R.string.interval_3h
+    }
 
 private enum class Language(val tag: String?, val label: Int) {
     SYSTEM(null, R.string.language_system),
@@ -95,6 +131,19 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenAccou
             }
             HorizontalDivider()
 
+            SectionTitle(R.string.background_title)
+            val interval by viewModel.syncInterval.collectAsStateWithLifecycle()
+            val notifications by viewModel.notifications.collectAsStateWithLifecycle()
+            interval?.let { current ->
+                SyncInterval.entries.forEach { option ->
+                    RadioRow(selected = option == current, label = option.label) { viewModel.setSyncInterval(option) }
+                }
+            }
+            notifications?.let { enabled ->
+                NotificationsSwitch(enabled, enabledInterval = interval != SyncInterval.OFF, onChange = viewModel::setNotifications)
+            }
+            HorizontalDivider(Modifier.padding(top = 8.dp))
+
             SectionTitle(R.string.forward_to_title)
             // Wait for the stored value before showing the field, so it isn't overwritten with "".
             stored?.let { initial -> ForwardAddressField(initial, viewModel::setForwardTo) }
@@ -129,22 +178,74 @@ private fun LanguagePicker() {
     // AppCompat persists the choice and applies it on every start (also below Android 13).
     val current = AppCompatDelegate.getApplicationLocales().toLanguageTags().substringBefore('-').ifEmpty { null }
     Language.entries.forEach { language ->
-        val selected = language.tag == current
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .selectable(selected = selected, role = Role.RadioButton) {
-                    val locales = language.tag?.let { LocaleListCompat.forLanguageTags(it) } ?: LocaleListCompat.getEmptyLocaleList()
-                    AppCompatDelegate.setApplicationLocales(locales)
-                }
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RadioButton(selected = selected, onClick = null)
-            Spacer(Modifier.width(12.dp))
-            Text(stringResource(language.label), style = MaterialTheme.typography.bodyLarge)
+        RadioRow(selected = language.tag == current, label = language.label) {
+            val locales = language.tag?.let { LocaleListCompat.forLanguageTags(it) } ?: LocaleListCompat.getEmptyLocaleList()
+            AppCompatDelegate.setApplicationLocales(locales)
         }
     }
+}
+
+@Composable
+private fun RadioRow(selected: Boolean, label: Int, onSelect: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(12.dp))
+        Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+/**
+ * Turning notifications on asks for the Android 13+ permission. If notifications stay blocked,
+ * the hint says so and tapping it opens the app's system notification settings.
+ */
+@Composable
+private fun NotificationsSwitch(enabled: Boolean, enabledInterval: Boolean, onChange: (Boolean) -> Unit) {
+    val context = LocalContext.current
+    var systemAllowed by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        systemAllowed = granted
+    }
+    val openSystemSettings = {
+        context.startActivity(Intent(ACTION_APP_NOTIFICATION_SETTINGS).putExtra(EXTRA_APP_PACKAGE, context.packageName))
+    }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { toggle(!enabled, systemAllowed, onChange) { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) } }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.notifications_label), style = MaterialTheme.typography.bodyLarge)
+            val hint = when {
+                enabled && !systemAllowed -> R.string.notifications_blocked
+                enabled && !enabledInterval -> R.string.notifications_need_interval
+                else -> R.string.notifications_hint
+            }
+            val blocked = hint == R.string.notifications_blocked
+            Text(
+                stringResource(hint),
+                Modifier.clickable(enabled = blocked) { openSystemSettings() },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (hint == R.string.notifications_hint) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+            )
+        }
+        Switch(
+            checked = enabled,
+            onCheckedChange = { on -> toggle(on, systemAllowed, onChange) { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) } },
+        )
+    }
+}
+
+private fun toggle(on: Boolean, systemAllowed: Boolean, onChange: (Boolean) -> Unit, requestPermission: () -> Unit) {
+    onChange(on)
+    if (on && !systemAllowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestPermission()
 }
 
 @Composable

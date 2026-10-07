@@ -173,6 +173,7 @@ class SyncerTest {
             accountId: Long, messageId: String, body: String, attachmentInfo: String?, senderGroup: String?, readAt: Instant,
         ) = Unit
         override suspend fun deleteAttachments(accountId: Long, messageId: String) = Unit
+        override suspend fun markNotified(accountId: Long, messageIds: List<String>) = Unit
         override suspend fun allPreviews() = rows.values.map { PreviewRow(it.accountId, it.messageId, it.preview) }
         override suspend fun updatePreview(accountId: Long, messageId: String, preview: String) {
             rows[accountId to messageId] = rows.getValue(accountId to messageId).copy(preview = preview)

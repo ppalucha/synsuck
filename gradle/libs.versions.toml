@@ -14,6 +14,7 @@ room = "2.8.5"
 core = "1.19.1"
 appcompat = "1.8.0"
 datastore = "1.2.1"
+work = "2.12.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -28,6 +29,7 @@ junit4 = { module = "junit:junit", version = "4.13.2" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+androidx-work = { module = "androidx.work:work-runtime", version.ref = "work" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }

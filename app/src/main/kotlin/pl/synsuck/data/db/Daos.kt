@@ -115,6 +115,9 @@ interface MessageDao {
         insertAttachments(attachments)
     }
 
+    @Query("UPDATE messages SET notified = 1 WHERE accountId = :accountId AND messageId IN (:messageIds)")
+    suspend fun markNotified(accountId: Long, messageIds: List<String>)
+
     @Query("SELECT accountId, messageId, preview FROM messages")
     suspend fun allPreviews(): List<PreviewRow>
 

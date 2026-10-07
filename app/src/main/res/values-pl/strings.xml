@@ -76,4 +76,24 @@
     <string name="forward_to_invalid">To nie wygląda na adres e-mail</string>
     <string name="language_title">Język</string>
     <string name="language_system">Domyślny systemu</string>
+    <!-- Background check & notifications -->
+    <string name="background_title">Sprawdzanie nowych wiadomości</string>
+    <string name="interval_off">Wyłączone (tylko ręczne odświeżanie)</string>
+    <string name="interval_15m">Co 15 minut</string>
+    <string name="interval_30m">Co 30 minut</string>
+    <string name="interval_1h">Co godzinę</string>
+    <string name="interval_3h">Co 3 godziny</string>
+    <string name="notifications_label">Powiadomienia</string>
+    <string name="notifications_hint">Powiadamiaj o nowych nieprzeczytanych wiadomościach</string>
+    <string name="notifications_blocked">Zablokowane w ustawieniach systemu – dotknij, aby zmienić</string>
+    <string name="notifications_need_interval">Włącz sprawdzanie w tle, aby dostawać powiadomienia</string>
+    <string name="channel_new_messages">Nowe wiadomości</string>
+    <string name="channel_account_problems">Problemy z kontem</string>
+    <string name="notification_public_text">Nowe wiadomości z Librusa</string>
+    <plurals name="new_messages_title">
+        <item quantity="one">%1$s: %2$d nowa wiadomość</item>
+        <item quantity="few">%1$s: %2$d nowe wiadomości</item>
+        <item quantity="many">%1$s: %2$d nowych wiadomości</item>
+        <item quantity="other">%1$s: %2$d nowej wiadomości</item>
+    </plurals>
 </resources>

@@ -72,6 +72,8 @@ fun InboxScreen(
     onAddAccount: () -> Unit,
     onFixAccount: (Long) -> Unit,
     onOpenMessage: (accountId: Long, messageId: String) -> Unit,
+    selectAccountId: Long? = null,
+    onAccountSelected: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
@@ -106,7 +108,7 @@ fun InboxScreen(
             when {
                 !state.loaded -> Unit
                 state.tabs.isEmpty() -> NoAccounts(onAddAccount)
-                else -> Inbox(state, refreshing, viewModel::refresh, onFixAccount, onOpenMessage)
+                else -> Inbox(state, refreshing, viewModel::refresh, onFixAccount, onOpenMessage, selectAccountId, onAccountSelected)
             }
         }
     }
@@ -119,10 +121,18 @@ private fun Inbox(
     onRefresh: () -> Unit,
     onFixAccount: (Long) -> Unit,
     onOpenMessage: (Long, String) -> Unit,
+    selectAccountId: Long?,
+    onAccountSelected: () -> Unit,
 ) {
     // Tab 0 = All; tab i = account i-1. Hidden with a single account.
     var selected by rememberSaveable { mutableIntStateOf(0) }
     if (selected > state.tabs.size) selected = 0
+    LaunchedEffect(selectAccountId) {
+        if (selectAccountId == null) return@LaunchedEffect
+        val index = state.tabs.indexOfFirst { it.account.id == selectAccountId }
+        if (index >= 0 && state.tabs.size > 1) selected = index + 1
+        onAccountSelected()
+    }
     val multiple = state.tabs.size > 1
     val selectedAccount: AccountEntity? = if (multiple && selected > 0) state.tabs[selected - 1].account else null
 

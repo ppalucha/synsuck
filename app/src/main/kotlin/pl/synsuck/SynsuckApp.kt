@@ -4,6 +4,7 @@ import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import pl.synsuck.crypto.PasswordCipher
@@ -13,6 +14,8 @@ import pl.synsuck.data.MessageRepository
 import pl.synsuck.data.Settings
 import pl.synsuck.data.Syncer
 import pl.synsuck.data.db.SynsuckDatabase
+import pl.synsuck.sync.Notifier
+import pl.synsuck.sync.SyncScheduler
 import java.util.concurrent.TimeUnit
 
 /** Manual dependency wiring; small enough not to need a DI framework. */
@@ -32,6 +35,8 @@ class AppContainer(app: Application) {
     val syncer = Syncer(database.accounts(), database.messages(), sessions)
     val messages = MessageRepository(database.accounts(), database.messages(), sessions, app.cacheDir)
     val settings = Settings(app)
+    val notifier = Notifier(app, database.accounts(), database.messages())
+    val scheduler = SyncScheduler(app)
 }
 
 class SynsuckApp : Application() {
@@ -41,7 +46,9 @@ class SynsuckApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        container.notifier.createChannels()
         container.appScope.launch {
+            container.scheduler.apply(container.settings.syncInterval.first())
             container.settings.runOnce("decode_previews") { container.messages.decodeStoredPreviews() }
             container.messages.cleanupCache()
         }
