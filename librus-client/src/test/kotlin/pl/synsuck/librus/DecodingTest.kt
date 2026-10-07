@@ -36,6 +36,24 @@ class DecodingTest {
     }
 
     @Test
+    fun `previews are decoded leniently`() {
+        assertEquals("Szanowni Państwo, w dniu 15 października", Decoding.preview(b64("Szanowni Państwo,\nw dniu 15 października")))
+        // truncated envelope
+        assertEquals("Dzień dobry, zebranie", Decoding.preview(b64("<Message><Content><![CDATA[Dzień dobry, zebranie")))
+        // cut in the middle of a two-byte character ("ż" = C5 BC) and of a base64 quantum
+        val cut = Base64.getEncoder().encodeToString("Proszę o zgodę na wyjazd ż".toByteArray().dropLast(1).toByteArray())
+        assertEquals("Proszę o zgodę na wyjazd", Decoding.preview(cut.dropLast(1)))
+    }
+
+    @Test
+    fun `plain previews pass through`() {
+        assertEquals("Szanowni Państwo, w dniu 15", Decoding.preview("Szanowni Państwo,  w dniu 15"))
+        assertEquals("Zebranie", Decoding.preview("Zebranie")) // valid base64 alphabet, but not text
+        assertEquals("OK", Decoding.preview("OK"))
+        assertEquals("", Decoding.preview(""))
+    }
+
+    @Test
     fun `file name from content disposition`() {
         assertEquals("zgoda.pdf", Decoding.fileNameFromDisposition("attachment; filename=\"zgoda.pdf\""))
         assertEquals("plan lekcji.pdf", Decoding.fileNameFromDisposition("attachment; filename*=UTF-8''plan%20lekcji.pdf"))

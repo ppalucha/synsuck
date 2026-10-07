@@ -37,6 +37,40 @@ internal object Decoding {
         return xml
     }
 
+    private val PREVIEW_PREFIX = Regex("^\\s*(<Message>)?\\s*(<Content>)?\\s*(<!\\[CDATA\\[)?")
+    private val PREVIEW_SUFFIX = Regex("(]]>)?\\s*</Content>.*$", RegexOption.DOT_MATCHES_ALL)
+
+    /**
+     * The list's `content` preview is base64 of a truncated text (sometimes of the XML envelope),
+     * so the last character may be cut mid-way. Decodes leniently; anything that doesn't decode
+     * to plausible text is returned unchanged, so plain-text previews pass through.
+     */
+    fun preview(raw: String): String {
+        val text = lenientBase64(raw.trim())
+            ?.replace(PREVIEW_PREFIX, "")
+            ?.replace(PREVIEW_SUFFIX, "")
+            ?: raw
+        return text.replace(Regex("\\s+"), " ").trim()
+    }
+
+    private fun lenientBase64(value: String): String? {
+        if (value.length < 8 || !BASE64.matches(value)) return null
+        // Complete base64 decodes as-is; a truncated one is cut back to whole 4-char groups.
+        val compact = value.filterNot { it == '\r' || it == '\n' }
+        val usable = compact.substring(0, compact.length - compact.length % 4)
+        val bytes = try {
+            Base64.getDecoder().decode(usable)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+        // Truncation can only break the last character (trimmed); anything invalid elsewhere means
+        // this wasn't base64 text after all.
+        val text = String(bytes, Charsets.UTF_8).trimEnd('\uFFFD')
+        if (text.isEmpty() || '\uFFFD' in text) return null
+        val printable = text.count { !it.isISOControl() || it.isWhitespace() }
+        return text.takeIf { printable >= text.length * 0.95 }
+    }
+
     /** `attachementInfo` is sometimes base64, sometimes plain text. */
     fun maybeBase64(raw: String?): String? {
         if (raw.isNullOrBlank()) return null

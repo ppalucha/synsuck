@@ -118,7 +118,7 @@ public class LibrusClient(
                     folder = folder,
                     senderName = senderName(m.senderName, m.senderFirstName, m.senderLastName),
                     topic = m.topic,
-                    preview = m.content.orEmpty(),
+                    preview = Decoding.preview(m.content.orEmpty()),
                     sentAt = Decoding.parseDate(m.sendDate),
                     readAt = Decoding.parseDateOrNull(m.readDate),
                     hasAttachments = m.isAnyFileAttached,
