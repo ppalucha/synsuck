@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Run a command inside the build container, e.g.:
+#   ./dev ./gradlew test
+#   ./dev probe/build/install/probe/bin/probe <login>
+#   ./dev --rebuild            (rebuild the image)
+set -euo pipefail
+
+IMAGE=synsuck-build
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+if [[ "${1:-}" == "--rebuild" ]] || ! docker image inspect "$IMAGE" > /dev/null 2>&1; then
+  docker build --platform linux/amd64 -t "$IMAGE" "$ROOT/tools/docker"
+  [[ "${1:-}" == "--rebuild" ]] && exit 0
+fi
+
+tty_flags=()
+[[ -t 0 && -t 1 ]] && tty_flags=(-it)
+
+# Forward selected secrets by name only, so values never appear on the command line.
+env_flags=()
+for var in LIBRUS_PASS; do
+  [[ -n "${!var:-}" ]] && env_flags+=(-e "$var")
+done
+
+exec docker run --rm ${tty_flags[@]+"${tty_flags[@]}"} ${env_flags[@]+"${env_flags[@]}"} --platform linux/amd64 \
+  -v "$ROOT:/work" \
+  -v synsuck-gradle:/root/.gradle \
+  -w /work \
+  "$IMAGE" "${@:-bash}"
