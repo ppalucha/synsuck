@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "synsuck"
 
-include(":librus-client", ":probe")
+include(":librus-client", ":probe", ":app")

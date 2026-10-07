@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Inbox -->
+    <string name="inbox_title">Wiadomości</string>
+    <string name="tab_all">Wszystkie</string>
+    <string name="tab_with_unread">%1$s (%2$d)</string>
+    <string name="action_refresh">Odśwież</string>
+    <string name="action_accounts">Konta</string>
+    <string name="inbox_empty">Brak wiadomości. Przeciągnij w dół, aby odświeżyć.</string>
+    <string name="no_accounts">Dodaj pierwsze konto Librus, aby czytać wiadomości.</string>
+    <string name="yesterday">Wczoraj</string>
+    <string name="archived">Archiwum</string>
+    <string name="has_attachments">Zawiera załączniki</string>
+    <string name="unread">Nieprzeczytana</string>
+    <string name="network_error">Brak połączenia z Librusem. Sprawdź internet.</string>
+
+    <!-- Account status banners -->
+    <string name="status_auth_failed">%1$s: błąd logowania – dotknij, aby poprawić</string>
+    <string name="status_captcha">%1$s: Librus wymaga captchy – zaloguj się raz w przeglądarce i dotknij, aby ponowić</string>
+    <string name="status_error">%1$s: błąd synchronizacji – %2$s</string>
+
+    <!-- Accounts -->
+    <string name="accounts_title">Konta</string>
+    <string name="add_account">Dodaj konto</string>
+    <string name="account_login_line">login: %1$s</string>
+    <string name="action_fix_password">Wpisz hasło ponownie</string>
+    <string name="action_remove">Usuń</string>
+    <string name="remove_account_title">Usunąć %1$s?</string>
+    <string name="remove_account_text">Konto i pobrane wiadomości zostaną usunięte z tego urządzenia.</string>
+    <string name="cancel">Anuluj</string>
+    <string name="back">Wstecz</string>
+    <string name="more">Więcej</string>
+    <string name="status_ok">OK</string>
+    <string name="status_problem">Wymaga uwagi</string>
+
+    <!-- Add / fix account -->
+    <string name="add_account_title">Dodaj konto</string>
+    <string name="fix_password_title">Wpisz hasło ponownie</string>
+    <string name="field_label">Nazwa</string>
+    <string name="field_label_hint">np. imię dziecka; zostaw puste, aby użyć imienia z Librusa</string>
+    <string name="field_login">Login</string>
+    <string name="field_password">Hasło</string>
+    <string name="field_color">Kolor</string>
+    <string name="show_password">Pokaż hasło</string>
+    <string name="hide_password">Ukryj hasło</string>
+    <string name="verify_and_save">Sprawdź i zapisz</string>
+    <string name="verifying">Sprawdzanie w Librusie…</string>
+    <string name="error_auth_failed">Librus odrzucił login lub hasło.</string>
+    <string name="error_auth_failed_detail">Librus odrzucił logowanie: %1$s</string>
+    <string name="error_captcha">Librus wymaga captchy. Zaloguj się raz na synergia.librus.pl w przeglądarce i spróbuj ponownie.</string>
+    <string name="error_unexpected">Nieoczekiwana odpowiedź Librusa: %1$s</string>
+    <string name="error_duplicate">Ten login jest już dodany.</string>
+    <string name="error_required">Login i hasło są wymagane.</string>
+</resources>

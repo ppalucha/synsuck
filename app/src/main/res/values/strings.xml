@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Synsuck</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Messages</string>
+    <string name="tab_all">All</string>
+    <string name="tab_with_unread">%1$s (%2$d)</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_accounts">Accounts</string>
+    <string name="inbox_empty">No messages yet. Pull down to refresh.</string>
+    <string name="no_accounts">Add your first Librus account to start reading messages.</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="archived">Archive</string>
+    <string name="has_attachments">Has attachments</string>
+    <string name="unread">Unread</string>
+    <string name="network_error">Couldn\'t reach Librus. Check your connection.</string>
+
+    <!-- Account status banners -->
+    <string name="status_auth_failed">%1$s: login failed – tap to fix</string>
+    <string name="status_captcha">%1$s: Librus asks for a captcha – log in once in a browser, then tap to retry</string>
+    <string name="status_error">%1$s: sync failed – %2$s</string>
+
+    <!-- Accounts -->
+    <string name="accounts_title">Accounts</string>
+    <string name="add_account">Add account</string>
+    <string name="account_login_line">login: %1$s</string>
+    <string name="action_fix_password">Re-enter password</string>
+    <string name="action_remove">Remove</string>
+    <string name="remove_account_title">Remove %1$s?</string>
+    <string name="remove_account_text">The account and its downloaded messages will be deleted from this device.</string>
+    <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
+    <string name="more">More</string>
+    <string name="status_ok">OK</string>
+    <string name="status_problem">Needs attention</string>
+
+    <!-- Add / fix account -->
+    <string name="add_account_title">Add account</string>
+    <string name="fix_password_title">Re-enter password</string>
+    <string name="field_label">Name</string>
+    <string name="field_label_hint">e.g. child\'s name; leave empty to use the name from Librus</string>
+    <string name="field_login">Login</string>
+    <string name="field_password">Password</string>
+    <string name="field_color">Color</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="verify_and_save">Verify &amp; save</string>
+    <string name="verifying">Checking with Librus…</string>
+    <string name="error_auth_failed">Librus rejected the login or password.</string>
+    <string name="error_auth_failed_detail">Librus rejected the login: %1$s</string>
+    <string name="error_captcha">Librus asks for a captcha. Log in once at synergia.librus.pl in a browser, then try again.</string>
+    <string name="error_unexpected">Unexpected response from Librus: %1$s</string>
+    <string name="error_duplicate">This login is already added.</string>
+    <string name="error_required">Login and password are required.</string>
+</resources>
