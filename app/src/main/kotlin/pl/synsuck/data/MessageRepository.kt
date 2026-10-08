@@ -84,6 +84,29 @@ class MessageRepository(
     suspend fun downloadAll(accountId: Long, messageId: String): List<CachedFile> =
         messages.getAttachments(accountId, messageId).map { download(it) }
 
+    /** Downloads the message's image attachments and combines them into one PDF, one image per page. */
+    suspend fun imagesPdf(accountId: Long, messageId: String): CachedFile {
+        val message = messages.get(accountId, messageId) ?: error("Message not found")
+        val images = messages.getAttachments(accountId, messageId)
+            .filter { isImageFileName(it.filename) }
+            .map { download(it) }
+        return withContext(Dispatchers.IO) {
+            val dir = File(attachmentsRoot, "$accountId/${safeSegment(messageId)}/$PDF_DIR")
+            val target = File(dir, sanitizeFileName("${message.topic}.pdf") ?: "images.pdf")
+            check(isInside(target, attachmentsRoot)) { "Refusing to write outside the attachments cache" }
+            dir.mkdirs()
+            val temp = File.createTempFile("pdf", PART_SUFFIX, dir)
+            try {
+                check(writeImagesPdf(images.map { it.file }, temp) > 0) { "No images could be read" }
+                target.delete()
+                if (!temp.renameTo(target)) error("Could not store PDF")
+                CachedFile(target, "application/pdf")
+            } finally {
+                temp.delete()
+            }
+        }
+    }
+
     /** Previews stored before they were decoded (v0.1) were raw base64. */
     suspend fun decodeStoredPreviews() = messages.rewritePreviews(::decodePreview)
 
@@ -109,6 +132,7 @@ class MessageRepository(
     private companion object {
         const val ATTACHMENTS_DIR = "attachments" // must match res/xml/file_paths.xml
         const val PART_SUFFIX = ".part"
+        const val PDF_DIR = "combined.pdf" // safeSegment never yields a ".", so no attachment dir can clash
 
         /** Ids come from Librus; keep only characters that are safe as a single path segment. */
         fun safeSegment(id: String): String = id.replace(Regex("[^A-Za-z0-9_-]"), "_").ifEmpty { "_" }

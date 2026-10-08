@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import pl.synsuck.data.CachedFile
 import pl.synsuck.data.MessageRepository
 import pl.synsuck.data.Settings
+import pl.synsuck.data.isImageFileName
 import pl.synsuck.data.db.AccountEntity
 import pl.synsuck.data.db.AttachmentEntity
 import pl.synsuck.data.db.MessageEntity
@@ -29,12 +30,16 @@ data class MessageState(
     val bodyError: MessageError? = null,
     val downloading: Set<String> = emptySet(),
     val forwarding: Boolean = false,
-)
+    val makingPdf: Boolean = false,
+) {
+    val imageCount: Int get() = attachments.count { isImageFileName(it.filename) }
+}
 
 enum class MessageError { NETWORK, LIBRUS }
 
 sealed interface MessageEvent {
     data class Open(val file: CachedFile) : MessageEvent
+    data class Share(val file: CachedFile, val subject: String) : MessageEvent
     data class Forward(
         val message: MessageEntity,
         val account: AccountEntity,
@@ -104,6 +109,19 @@ class MessageViewModel(
             } else {
                 _events.send(MessageEvent.Forward(message, account, files, settings.validForwardAddress()))
             }
+        }
+    }
+
+    fun shareImagesPdf() {
+        val message = state.value.message ?: return
+        if (ui.value.makingPdf) return
+        ui.update { it.copy(makingPdf = true) }
+        viewModelScope.launch {
+            var file: CachedFile? = null
+            val error = attempt { file = repository.imagesPdf(accountId, messageId) }
+            ui.update { it.copy(makingPdf = false) }
+            file?.let { _events.send(MessageEvent.Share(it, message.topic)) }
+            error?.let { _events.send(MessageEvent.Failed(it)) }
         }
     }
 

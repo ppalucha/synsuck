@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Forward
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +59,7 @@ import pl.synsuck.R
 import pl.synsuck.data.db.AttachmentEntity
 import pl.synsuck.ui.forwardAsEmail
 import pl.synsuck.ui.openAttachment
+import pl.synsuck.ui.shareFile
 import pl.synsuck.ui.theme.AccountColors
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -74,6 +76,8 @@ fun MessageScreen(viewModel: MessageViewModel, onBack: () -> Unit) {
             val problem = when (event) {
                 is MessageEvent.Open ->
                     if (context.openAttachment(event.file)) null else R.string.no_app_to_open
+                is MessageEvent.Share ->
+                    if (context.shareFile(event.file, event.subject)) null else R.string.no_app_to_open
                 is MessageEvent.Forward ->
                     if (context.forwardAsEmail(event.message, event.account, event.files, event.to)) null else R.string.no_mail_app
                 is MessageEvent.Failed -> event.error.messageRes()
@@ -159,6 +163,23 @@ fun MessageScreen(viewModel: MessageViewModel, onBack: () -> Unit) {
                         downloading = attachment.attachmentId in state.downloading,
                         onOpen = { viewModel.open(attachment) },
                     )
+                }
+                if (state.imageCount >= 2) {
+                    OutlinedButton(
+                        onClick = viewModel::shareImagesPdf,
+                        enabled = !state.makingPdf,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        if (state.makingPdf) {
+                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.preparing_pdf))
+                        } else {
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.images_to_pdf, state.imageCount))
+                        }
+                    }
                 }
             }
 

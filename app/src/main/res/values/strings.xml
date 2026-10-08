@@ -64,6 +64,8 @@
     <string name="librus_error">Librus returned something unexpected. Try again later.</string>
     <string name="attachments">Attachments</string>
     <string name="open_attachment">Open</string>
+    <string name="images_to_pdf">Images as one PDF (%1$d)</string>
+    <string name="preparing_pdf">Preparing PDF…</string>
     <string name="no_app_to_open">No app on this phone can open this file.</string>
     <string name="forward_as_email">Forward as email</string>
     <string name="preparing_forward">Downloading attachments…</string>

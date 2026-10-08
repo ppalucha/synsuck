@@ -62,6 +62,8 @@
     <string name="librus_error">Librus zwrócił nieoczekiwaną odpowiedź. Spróbuj później.</string>
     <string name="attachments">Załączniki</string>
     <string name="open_attachment">Otwórz</string>
+    <string name="images_to_pdf">Zdjęcia jako jeden PDF (%1$d)</string>
+    <string name="preparing_pdf">Przygotowywanie PDF…</string>
     <string name="no_app_to_open">Brak aplikacji, która może otworzyć ten plik.</string>
     <string name="forward_as_email">Przekaż e-mailem</string>
     <string name="preparing_forward">Pobieranie załączników…</string>

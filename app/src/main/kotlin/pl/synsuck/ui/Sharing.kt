@@ -31,6 +31,24 @@ fun Context.openAttachment(file: CachedFile): Boolean {
     }
 }
 
+/** Offers [file] to any app through the share sheet (Drive, email, PDF viewers…). Returns false if none can take it. */
+fun Context.shareFile(file: CachedFile, subject: String): Boolean {
+    val uri = contentUri(file)
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = file.mimeType
+        putExtra(Intent.EXTRA_STREAM, uri)
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        clipData = ClipData.newRawUri(null, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    return try {
+        startActivity(Intent.createChooser(send, null))
+        true
+    } catch (e: ActivityNotFoundException) {
+        false
+    }
+}
+
 /**
  * Opens the user's mail app with the message prefilled: recipient, "Fwd:" subject,
  * a header (from / date / subject / account), the text, and the attachments.
