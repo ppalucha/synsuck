@@ -2,6 +2,7 @@
 
 package pl.synsuck.ui.inbox
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +23,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -39,17 +43,22 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -79,6 +88,13 @@ fun InboxScreen(
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    val closeSearch = {
+        searching = false
+        query = ""
+    }
+    BackHandler(enabled = searching, onBack = closeSearch)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -90,9 +106,16 @@ fun InboxScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            if (searching) {
+                SearchBar(query, onQueryChange = { query = it.take(MAX_QUERY_LENGTH) }, onClose = closeSearch)
+            } else TopAppBar(
                 title = { Text(stringResource(R.string.inbox_title)) },
                 actions = {
+                    if (state.tabs.isNotEmpty()) {
+                        IconButton(onClick = { searching = true }) {
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.action_search))
+                        }
+                    }
                     IconButton(onClick = viewModel::refresh, enabled = !refreshing) {
                         Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.action_refresh))
                     }
@@ -108,7 +131,10 @@ fun InboxScreen(
             when {
                 !state.loaded -> Unit
                 state.tabs.isEmpty() -> NoAccounts(onAddAccount)
-                else -> Inbox(state, refreshing, viewModel::refresh, onFixAccount, onOpenMessage, selectAccountId, onAccountSelected)
+                else -> Inbox(
+                    state, query, refreshing, viewModel::refresh, onFixAccount, onOpenMessage,
+                    selectAccountId, onAccountSelected,
+                )
             }
         }
     }
@@ -117,6 +143,7 @@ fun InboxScreen(
 @Composable
 private fun Inbox(
     state: InboxState,
+    query: String,
     refreshing: Boolean,
     onRefresh: () -> Unit,
     onFixAccount: (Long) -> Unit,
@@ -153,7 +180,9 @@ private fun Inbox(
         .filter { it.status != AccountStatus.OK && (selectedAccount == null || it.id == selectedAccount.id) }
     problemAccounts.forEach { StatusBanner(it, onClick = { onFixAccount(it.id) }) }
 
-    val rows = if (selectedAccount == null) state.messages else state.messages.filter { it.accountId == selectedAccount.id }
+    val rows = remember(state.messages, selectedAccount?.id, query) {
+        state.messages.filter { (selectedAccount == null || it.accountId == selectedAccount.id) && it.matches(query) }
+    }
     val formatDate = rememberMessageDateFormatter()
 
     PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
@@ -161,7 +190,7 @@ private fun Inbox(
             if (rows.isEmpty()) {
                 item {
                     Text(
-                        stringResource(R.string.inbox_empty),
+                        stringResource(if (query.isBlank()) R.string.inbox_empty else R.string.search_no_results),
                         Modifier.fillMaxWidth().padding(32.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -179,6 +208,41 @@ private fun Inbox(
             }
         }
     }
+}
+
+@Composable
+private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onClose: () -> Unit) {
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    TopAppBar(
+        navigationIcon = {
+            IconButton(onClick = onClose) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.close_search))
+            }
+        },
+        title = {
+            TextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                placeholder = { Text(stringResource(R.string.search_hint), maxLines = 1) },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+            )
+        },
+        actions = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_clear))
+                }
+            }
+        },
+    )
 }
 
 @Composable

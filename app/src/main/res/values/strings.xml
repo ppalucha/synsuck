@@ -8,6 +8,11 @@
     <string name="tab_with_unread">%1$s (%2$d)</string>
     <string name="action_refresh">Refresh</string>
     <string name="inbox_empty">No messages yet. Pull down to refresh.</string>
+    <string name="action_search">Search</string>
+    <string name="search_hint">Search sender, subject, text</string>
+    <string name="close_search">Close search</string>
+    <string name="action_clear">Clear</string>
+    <string name="search_no_results">No matching messages.</string>
     <string name="no_accounts">Add your first Librus account to start reading messages.</string>
     <string name="yesterday">Yesterday</string>
     <string name="archived">Archive</string>

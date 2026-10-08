@@ -6,6 +6,11 @@
     <string name="tab_with_unread">%1$s (%2$d)</string>
     <string name="action_refresh">Odśwież</string>
     <string name="inbox_empty">Brak wiadomości. Przeciągnij w dół, aby odświeżyć.</string>
+    <string name="action_search">Szukaj</string>
+    <string name="search_hint">Szukaj nadawcy, tematu, treści</string>
+    <string name="close_search">Zamknij wyszukiwanie</string>
+    <string name="action_clear">Wyczyść</string>
+    <string name="search_no_results">Brak pasujących wiadomości.</string>
     <string name="no_accounts">Dodaj pierwsze konto Librus, aby czytać wiadomości.</string>
     <string name="yesterday">Wczoraj</string>
     <string name="archived">Archiwum</string>

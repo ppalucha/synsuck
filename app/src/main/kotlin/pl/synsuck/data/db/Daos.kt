@@ -54,7 +54,7 @@ interface MessageDao {
     @Query(
         """
         SELECT m.accountId, m.messageId, m.folder, m.senderName, m.topic, m.preview,
-               m.sentAt, m.readAt, m.hasAttachments,
+               m.sentAt, m.readAt, m.hasAttachments, m.body,
                a.label AS accountLabel, a.color AS accountColor
         FROM messages m JOIN accounts a ON a.id = m.accountId
         ORDER BY m.sentAt DESC

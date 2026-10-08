@@ -97,6 +97,8 @@ data class MessageRow(
     val hasAttachments: Boolean,
     @ColumnInfo(name = "accountLabel") val accountLabel: String,
     @ColumnInfo(name = "accountColor") val accountColor: Int,
+    /** Only set for opened messages; used by inbox search. */
+    val body: String? = null,
 )
 
 data class UnreadCount(val accountId: Long, val unread: Int)
